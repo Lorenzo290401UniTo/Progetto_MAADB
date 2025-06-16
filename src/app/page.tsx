@@ -5,11 +5,17 @@ import axios from "axios";
 import "@/app/page.css";
 
 export default function mainPage() {
+  // risultati query analitica 1
   const [europeanStudents, setEuropeanStudents] = useState(0);
   const [totalStudents, setTotalStudents] = useState(0);
   const [europeanPercentage, setEuropeanPercentage] = useState(0);
 
+  // risultati query analitica 3
   const [analitica3Results, setAnalitica3Results] = useState([] as string[]);
+
+  const [parametrica1Results, setParametrica1Results] = useState<[string, string][]>([]);
+
+  /* ----------- CHIAMATE API (QUERY ANALITICHE) ----------- */
 
   async function analitiche_query1() {
     try {
@@ -23,7 +29,15 @@ export default function mainPage() {
     }
   }
 
-  async function analitiche_query2() {}
+  async function analitiche_query2() {
+    try {
+      const res = await axios.get("/api/analitiche_query2");
+      let result = [] as string[];
+      console.log(res);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   async function analitiche_query3() {
     try {
@@ -33,6 +47,24 @@ export default function mainPage() {
         result.push(element.join("#"));
       });
       setAnalitica3Results(result);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  /* ----------- CHIAMATE API (QUERY PARAMETRICHE) ----------- */
+
+  async function parametriche_query1() {
+    try {
+      const res = await axios.get("/api/parametriche_query1");
+
+      for (const record of Object.entries(res.data)) {
+        //console.log(`${record[0]}:`);
+        const dateStr = new Date((record[1] as unknown as any)._creation_date).toISOString().split("T")[0];
+        let content = `   - ID: ${(record[1] as unknown as any).id}, Content: ${(record[1] as unknown as any).content}, Date: ${dateStr}`;
+        //console.log(`  - ID: ${(record[1] as unknown as any).id}, Content: ${(record[1] as unknown as any).content}, Date: ${dateStr}`);
+        setParametrica1Results((prev) => [...prev, [record[0], content]]);
+      }
     } catch (error) {
       console.error(error);
     }
@@ -61,14 +93,9 @@ export default function mainPage() {
           </div>
         </div>
 
-        <div className="border-[2px] border-solid border-[red] px-[20px] hidden">
+        <div className="border-[2px] border-solid border-[red] px-[20px] pb-[20px]">
           <p>Seleziona i tag dei top 10 forum</p>
           <button onClick={() => analitiche_query2()}>Query 2</button>
-          <div>
-            <p>Studenti europei: {europeanStudents}</p>
-            <p>Studenti totali: {totalStudents}</p>
-            <p>Percentuale di europei sul totale: {europeanPercentage}%</p>
-          </div>
         </div>
 
         <div className="border-[2px] border-solid border-[red] px-[20px] pb-[20px]">
@@ -82,6 +109,20 @@ export default function mainPage() {
                 Males: {element.split("#")[1]}
                 <br />
                 Females: {element.split("#")[2]}
+              </p>
+            ))}
+          </div>
+        </div>
+
+        <div className="border-[2px] border-solid border-[blue] px-[20px] pb-[20px] mt-[50px]">
+          <p>Selezionare tutti i messaggi creati da un determinato (genere group by ID)</p>
+          <button onClick={() => parametriche_query1()}>Query 1</button>
+          <div>
+            {parametrica1Results.map((record, index) => (
+              <p key={index}>
+                {record[0]}
+                <br />
+                {record[1]}
               </p>
             ))}
           </div>
