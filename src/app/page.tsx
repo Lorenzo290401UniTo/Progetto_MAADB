@@ -4,6 +4,14 @@ import { useState } from "react";
 import axios from "axios";
 import "@/app/page.css";
 
+type resType = {
+  name: string;
+  msgs: {
+    id: number;
+    content: string;
+  }[];
+};
+
 export default function mainPage() {
   // risultati query analitica 1
   const [europeanStudents, setEuropeanStudents] = useState(0);
@@ -13,7 +21,11 @@ export default function mainPage() {
   // risultati query analitica 3
   const [analitica3Results, setAnalitica3Results] = useState([] as string[]);
 
+  // risultati query parametrica 1
   const [parametrica1Results, setParametrica1Results] = useState<[string, string][]>([]);
+
+  // risultati query parametrica 2
+  const [parametrica2Results, setParametrica2Results] = useState<resType[]>([]);
 
   /* ----------- CHIAMATE API (QUERY ANALITICHE) ----------- */
 
@@ -56,15 +68,43 @@ export default function mainPage() {
 
   async function parametriche_query1() {
     try {
+      // manca input genere (male/female)
       const res = await axios.get("/api/parametriche_query1");
 
       for (const record of Object.entries(res.data)) {
-        //console.log(`${record[0]}:`);
         const dateStr = new Date((record[1] as unknown as any)._creation_date).toISOString().split("T")[0];
         let content = `   - ID: ${(record[1] as unknown as any).id}, Content: ${(record[1] as unknown as any).content}, Date: ${dateStr}`;
-        //console.log(`  - ID: ${(record[1] as unknown as any).id}, Content: ${(record[1] as unknown as any).content}, Date: ${dateStr}`);
         setParametrica1Results((prev) => [...prev, [record[0], content]]);
       }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function parametriche_query2() {
+    try {
+      // manca parametro "tag" da passare in input
+      const res = await axios.get("/api/parametriche_query2");
+      console.log(res);
+      let result = [] as resType[];
+      res.data.forEach((record: any) => {
+        let comments = [] as {
+          id: number;
+          content: string;
+        }[];
+
+        record[1].forEach((comment: any) => {
+          comments.push({
+            id: comment[0],
+            content: comment[1],
+          });
+        });
+        result.push({
+          name: record[0] as string,
+          msgs: comments,
+        });
+      });
+      setParametrica2Results(result);
     } catch (error) {
       console.error(error);
     }
@@ -123,6 +163,25 @@ export default function mainPage() {
                 {record[0]}
                 <br />
                 {record[1]}
+              </p>
+            ))}
+          </div>
+        </div>
+
+        <div className="border-[2px] border-solid border-[blue] px-[20px] pb-[20px]">
+          <p>Selezionare tutti i commenti ai messaggi scritti da persone con un certo interesse</p>
+          <button onClick={() => parametriche_query2()}>Query 2</button>
+          <div>
+            {parametrica2Results.map((element, index) => (
+              <p key={index} style={{ fontWeight: "bold" }}>
+                {element.name}
+                <br />
+                {element.msgs.map((element, index) => (
+                  <span key={index} style={{ fontWeight: "normal" }}>
+                    - {element.id}: {element.content}
+                    <br />
+                  </span>
+                ))}
               </p>
             ))}
           </div>

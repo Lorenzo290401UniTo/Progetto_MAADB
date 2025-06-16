@@ -16,14 +16,14 @@ export async function GET() {
       .toArray();
     let studentsList = users.map((record) => record.id);
 
-    // Seleziona solo quelli che studiano e lavorano
+    // Prende i commenti di quegli studenti
     const comments_rel = await db
       .collection("comment_hasCreator_person")
       .find({ Person_id: { $in: studentsList } }, { projection: { Comment_id: 1, Person_id: 1 } })
       .toArray();
     let commentIds = comments_rel.map((record) => record.Comment_id);
 
-    //
+    // Richiede le informazioni complete dei commenti trovati
     const comments = await db
       .collection("comment")
       .find({ id: { $in: commentIds } })
