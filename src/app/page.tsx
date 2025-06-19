@@ -27,6 +27,9 @@ export default function mainPage() {
   // risultati query parametrica 2
   const [parametrica2Results, setParametrica2Results] = useState<resType[]>([]);
 
+  // risultati query parametrica 3
+  const [parametrica3Results, setParametrica3Results] = useState<[number, number][]>([]);
+
   /* ----------- CHIAMATE API (QUERY ANALITICHE) ----------- */
 
   async function analitiche_query1() {
@@ -85,7 +88,6 @@ export default function mainPage() {
     try {
       // manca parametro "tag" da passare in input
       const res = await axios.get("/api/parametriche_query2");
-      console.log(res);
       let result = [] as resType[];
       res.data.forEach((record: any) => {
         let comments = [] as {
@@ -105,6 +107,18 @@ export default function mainPage() {
         });
       });
       setParametrica2Results(result);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function parametriche_query3() {
+    try {
+      // manca input ID persona
+      const res = await axios.get("/api/parametriche_query3");
+      res.data.forEach((record: any) => {
+        setParametrica3Results((prev) => [...prev, [record[0], record[1]]]);
+      });
     } catch (error) {
       console.error(error);
     }
@@ -182,6 +196,18 @@ export default function mainPage() {
                     <br />
                   </span>
                 ))}
+              </p>
+            ))}
+          </div>
+        </div>
+
+        <div className="border-[2px] border-solid border-[blue] px-[20px] pb-[20px]">
+          <p>Considerando una persona con un determinato ID, restituire i forum di cui sono membri i conoscenti di tale persona localizzati nella sua stessa città</p>
+          <button onClick={() => parametriche_query3()}>Query 3</button>
+          <div>
+            {parametrica3Results.map((record, index) => (
+              <p key={index}>
+                Utente {record[0]} partecipa al forum {record[1]}
               </p>
             ))}
           </div>
