@@ -36,7 +36,7 @@ export async function GET() {
 
     const forums = await db
       .collection("forum_hasMember_person")
-      .find({ Person_id: { $in: knownPeople } })  // finalList
+      .find({ Person_id: { $in: finalList } })
       .toArray();
     let res = forums.map((record) => [record.Person_id, record.Forum_id]);
 
