@@ -22,33 +22,40 @@ export default function mainPage() {
   const [europeanPercentage, setEuropeanPercentage] = useState(0);
   const [showResultsQuery1, setShowResultsQuery1] = useState(false)
   const [isLoadingAnalitQuery1, setIsLoadingAnalitQuery1] = useState(false)
+  const [timer1, setTimer1] = useState("");
 
   // risultati query analitica 3
   const [analitica3Results, setAnalitica3Results] = useState([] as string[]);
   const [isLoadingAnalitQuery3, setIsLoadingAnalitQuery3] = useState(false)
+  const [timer3, setTimer3] = useState("");
 
   // risultati query parametrica 1
   const [parametrica1Results, setParametrica1Results] = useState<[string, string][]>([]);
   const [genderInput, setGenderInput] = useState("male")
   const [query1ParamError, setQuery1ParamError] = useState("")
   const [isLoadingParamQuery1, setIsLoadingParamQuery1] = useState(false)
+  const [timer4, setTimer4] = useState("");
 
   // risultati query parametrica 2
   const [parametrica2Results, setParametrica2Results] = useState<resType[]>([]);
   const [tagInput, setTagInput] = useState("")
   const [query2ParamError, setQuery2ParamError] = useState("")
   const [isLoadingParamQuery2, setIsLoadingParamQuery2] = useState(false)
+  const [timer5, setTimer5] = useState("");
 
   // risultati query parametrica 3
   const [parametrica3Results, setParametrica3Results] = useState<[string, string[]][]>([]);
   const [userIDInput, setUserIDInput] = useState("")
   const [query3ParamError, setQuery3ParamError] = useState("")
   const [isLoadingParamQuery3, setIsLoadingParamQuery3] = useState(false)
+  const [timer6, setTimer6] = useState("");
 
   /* ----------- CHIAMATE API (QUERY ANALITICHE) ----------- */
 
   async function analitiche_query1() {
     try {
+      const start = performance.now();
+
       setIsLoadingAnalitQuery1(true)
       setShowResultsQuery1(false)
       const res = await axios.get("/api/analitiche_query1");
@@ -56,6 +63,9 @@ export default function mainPage() {
       setTotalStudents(res.data[1]["low"]);
       setEuropeanPercentage(res.data[2]);
       setShowResultsQuery1(true)
+
+      const end = performance.now();
+      setTimer1(((end - start) / 1000).toFixed(2));
     } catch (error) {
       console.error(error);
     } finally {
@@ -75,6 +85,8 @@ export default function mainPage() {
 
   async function analitiche_query3() {
     try {
+      const start = performance.now();
+
       setIsLoadingAnalitQuery3(true)
       const res = await axios.get("/api/analitiche_query3");
       let result = [] as string[];
@@ -82,6 +94,9 @@ export default function mainPage() {
         result.push(element.join("#"));
       });
       setAnalitica3Results(result);
+
+      const end = performance.now();
+      setTimer3(((end - start) / 1000).toFixed(2));
     } catch (error) {
       console.error(error);
     } finally {
@@ -93,6 +108,8 @@ export default function mainPage() {
 
   async function parametriche_query1() {
     try {
+      const start = performance.now();
+
       setIsLoadingParamQuery1(true)
       setQuery1ParamError("")
       setParametrica1Results([])
@@ -114,6 +131,9 @@ export default function mainPage() {
       }else{
         setQuery1ParamError(res.data.error)
       }
+
+      const end = performance.now();
+      setTimer4(((end - start) / 1000).toFixed(2));
     } catch (error) {
       console.error(error);
     } finally {
@@ -123,6 +143,8 @@ export default function mainPage() {
 
   async function parametriche_query2() {
     try {
+      const start = performance.now();
+
       setIsLoadingParamQuery2(true)
       setQuery2ParamError("")
       setParametrica2Results([])
@@ -158,6 +180,9 @@ export default function mainPage() {
       }else{
         setQuery2ParamError(res.data.error)
       }
+
+      const end = performance.now();
+      setTimer5(((end - start) / 1000).toFixed(2));
     } catch (error) {
       console.error(error);
     } finally {
@@ -167,6 +192,8 @@ export default function mainPage() {
 
   async function parametriche_query3() {
     try {
+      const start = performance.now();
+
       setIsLoadingParamQuery3(true)
       setQuery3ParamError("")
       setParametrica3Results([])
@@ -186,6 +213,9 @@ export default function mainPage() {
       }else{
         setQuery3ParamError(res.data.error)
       }
+
+      const end = performance.now();
+      setTimer6(((end - start) / 1000).toFixed(2));
     } catch (error) {
       console.error(error);
     } finally {
@@ -195,7 +225,7 @@ export default function mainPage() {
 
   return (
     <>
-      <main className="text-[white] text-[18px]">   {/* mr-[15%] */}
+      <main className="text-[white] text-[18px]">
         <h1 className="text-[42px]" style={{ fontWeight: "bold" }}>
           Progetto MAADB
         </h1>
@@ -226,6 +256,7 @@ export default function mainPage() {
                 <p>
                   <span style={{ fontWeight: "bold" }}>Percentuale di europei sul totale</span>: {europeanPercentage}%
                 </p>
+                <p className="text-[14px] text-[grey] mt-[20px]">Tempo di esecuzione: {timer1} secondi</p>
               </div>
             </div>
 
@@ -249,6 +280,7 @@ export default function mainPage() {
                   </p>
                 ))}
               </div>
+              <p className="text-[14px] text-[grey] mt-[20px]" style={timer3 == "" ? {display :"none"} : {}}>Tempo di esecuzione: {timer3} secondi</p>
             </div>
 
             <div className="max-h-[100%] flex flex-col gap-[10px] overflow-hidden" style={selectedQuery != 3 ? {display: "none"} : {}}>
@@ -274,6 +306,7 @@ export default function mainPage() {
                     )) : query1ParamError
                 }
               </div>
+              <p className="text-[14px] text-[grey] mt-[20px]" style={timer4 == "" ? {display :"none"} : {}}>Tempo di esecuzione: {timer4} secondi</p>
             </div>
 
             <div className="max-h-[100%] flex flex-col gap-[10px] overflow-hidden" style={selectedQuery != 4 ? {display: "none"} : {}}>
@@ -302,6 +335,7 @@ export default function mainPage() {
                     )) : query2ParamError
                 }
               </div>
+              <p className="text-[14px] text-[grey] mt-[20px]" style={timer5 == "" ? {display :"none"} : {}}>Tempo di esecuzione: {timer5} secondi</p>
             </div>
 
             <div className="max-h-[100%] flex flex-col gap-[10px] overflow-hidden" style={selectedQuery != 5 ? {display: "none"} : {}}>
@@ -328,6 +362,7 @@ export default function mainPage() {
                     )) : query3ParamError
                 }
               </div>
+              <p className="text-[14px] text-[grey] mt-[20px]" style={timer6 == "" ? {display :"none"} : {}}>Tempo di esecuzione: {timer6} secondi</p>
             </div>
           </div>
         </div>

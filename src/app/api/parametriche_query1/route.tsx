@@ -37,7 +37,7 @@ export async function GET(req: Request) {
       .collection("comment")
       .find({ id: { $in: commentIds } })
       .toArray();
-    let recentComments = groupCommentsByPerson(users, comments_rel, comments);
+    let recentComments = groupCommentsByPerson(users, comments_rel, comments);  // controllare
     //console.log(recentComments);
 
     return NextResponse.json(recentComments);
