@@ -11,7 +11,7 @@ export async function GET(req: Request) {
   if (param != null && param != "") {
     personId = parseInt(param);
   } else {
-    return NextResponse.json({error: "User ID non inserito"})
+    return NextResponse.json({ error: "User ID non inserito" });
   }
 
   try {
@@ -24,13 +24,13 @@ export async function GET(req: Request) {
     //console.log(city);
 
     // Seleziona tutti gli abitanti di quella città
-    let people_list
-    if(city != undefined){
+    let people_list;
+    if (city != undefined) {
       const people = await session.run(`MATCH (p:person)-[:islocatedin]->(pl:place {type: "city", name: $city}) RETURN p.id AS person_id`, { city });
       people_list = people.records.map((record) => record.get("person_id").toNumber());
       people_list = people_list.filter((item) => item != personId);
-    }else{
-      return NextResponse.json({error: "Nessuna città associata all'utente " + personId})
+    } else {
+      return NextResponse.json({ error: "Nessuna città associata all'utente " + personId });
     }
     //console.log(people_list);
 

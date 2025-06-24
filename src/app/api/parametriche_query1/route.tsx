@@ -2,26 +2,35 @@ import { NextResponse } from "next/server";
 import clientPromise from "@/app/api/mongo_init";
 import driver from "@/app/api/neo_init";
 
-export async function GET() {
+export async function GET(req: Request) {
   const session = driver.session();
+
+  const url = new URL(req.url);
+  let genderInput = url.searchParams.get("gender");
+  if (genderInput == null || genderInput == "") {
+    return NextResponse.json({ error: "Genere non inserito" });
+  }
 
   try {
     const client = await clientPromise;
     const db = client.db("Progetto_MAADB");
 
-    // Prende tutti gli studenti di un determinato genere
+    // Prende tutti gli utenti di un determinato genere
     const users = await db
       .collection("person")
-      .find({ gender: "female" }, { projection: { id: 1, firstName: 1, lastName: 1 } })
+      .find({ gender: genderInput }, { projection: { id: 1, firstName: 1, lastName: 1 } })
       .toArray();
-    let studentsList = users.map((record) => record.id);
+    let usersList = users.map((record) => record.id);
 
-    // Prende i commenti di quegli studenti
+    // Prende i commenti di quegli utenti
     const comments_rel = await db
       .collection("comment_hasCreator_person")
-      .find({ Person_id: { $in: studentsList } }, { projection: { Comment_id: 1, Person_id: 1 } })
+      .find({ Person_id: { $in: usersList } }, { projection: { Comment_id: 1, Person_id: 1 } })
       .toArray();
     let commentIds = comments_rel.map((record) => record.Comment_id);
+    if(commentIds.length == 0){
+      return NextResponse.json({ error: "Nessun commento trovato" });
+    }
 
     // Richiede le informazioni complete dei commenti trovati
     const comments = await db

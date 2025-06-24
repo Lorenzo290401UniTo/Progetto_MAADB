@@ -2,13 +2,18 @@ import { NextResponse } from "next/server";
 import clientPromise from "@/app/api/mongo_init";
 import driver from "@/app/api/neo_init";
 
-export async function GET() {
+export async function GET(req: Request) {
   const session = driver.session();
+
+  const url = new URL(req.url);
+  let tag = url.searchParams.get("tag")
+  if (tag == null || tag == "") {
+    return NextResponse.json({ error: "Tag non inserito" });
+  }
 
   try {
     const client = await clientPromise;
     const db = client.db("Progetto_MAADB");
-    let tag = "Che_Guevara";
 
     // Seleziona tutti gli id delle persone con un determinato interesse in input
     const result = await session.run("MATCH (p:person)-[:hasinterest]->(t:tag) WHERE t.name = $tag RETURN collect(DISTINCT p.id) AS peopleIDs", { tag });
@@ -17,6 +22,9 @@ export async function GET() {
     temp.forEach((record: any) => {
       peopleIDs.push(record.toNumber());
     });
+    if(peopleIDs.length == 0){
+      return NextResponse.json({ error: 'Nessun utente trovato con il tag: "' + tag + '"'});
+    }
 
     // Seleziona tutti i commenti di queste persone
     const commentPersonAggregate = await db
