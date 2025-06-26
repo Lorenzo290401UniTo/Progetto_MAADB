@@ -3,6 +3,10 @@ import Image from "next/image"
 import { useState } from "react";
 import axios from "axios";
 import "@/app/page.css";
+import CityAnaliticBox from "./components/cityAnalit";
+import MsgParamBox from "./components/msgParam";
+import ForumsListBox from "./components/forumsList";
+import MsgListBox from "./components/msgListParam";
 
 type resType = {
   name: string;
@@ -122,7 +126,7 @@ export default function mainPage() {
         if(res.data.length != 0){
           for (const record of Object.entries(res.data)) {
             const dateStr = new Date((record[1] as unknown as any)._creation_date).toISOString().split("T")[0];
-            let content = `   - ID: ${(record[1] as unknown as any).id}, Content: ${(record[1] as unknown as any).content}, Date: ${dateStr}`;
+            let content = `${(record[1] as unknown as any).id}(###)${(record[1] as unknown as any).content}(###)${dateStr}`;
             setParametrica1Results((prev) => [...prev, [record[0], content]]);
           }
         }else{
@@ -225,12 +229,12 @@ export default function mainPage() {
 
   return (
     <>
-      <main className="text-[white] text-[18px]">
-        <h1 className="text-[42px]" style={{ fontWeight: "bold" }}>
+      <main className="text-[18px]">
+        <h1 className="text-[42px] text-center" style={{ fontWeight: "bold" }}>
           Progetto MAADB
         </h1>
         <div className="w-full h-[80vh] flex">
-          <div className="w-[15%] h-[100vdh] flex flex-col gap-[5px] pr-[25px]" style={{borderRight: "1px solid white"}}>
+          <div className="w-[15%] h-[100vdh] flex flex-col gap-[5px] pr-[25px]" style={{borderRight: "1px solid black"}}>
             <p className="text-[20px]">Query analitiche:</p>
             <button className="w-full h-[50px] text-[16px] rounded-[6px] cursor-pointer" onClick={() => setSelectedQuery(0)}>Query 1</button>
             <button className="w-full h-[50px] bg-[#FF7F7F] text-[16px] rounded-[6px] cursor-pointer" onClick={() => setSelectedQuery(1)}>Query 2</button>
@@ -269,22 +273,16 @@ export default function mainPage() {
               <p>Contare il numero di studenti lavoratori per città e per sesso</p>
               <button className="w-[150px] min-h-[50px] px-[20px] text-[16px] rounded-[6px] cursor-pointer" onClick={() => analitiche_query3()}>Esegui query</button>
               <Image src="/loading_icon.gif" style={!isLoadingAnalitQuery3 ? {display: "none"} : {}} width={250} height={150} alt="loading_icon" priority/>
-              <div className="overflow-y-scroll">
+              <div className="overflow-y-scroll overflow-x-hidden grid grid-cols-5 gap-[10px]">
                 {analitica3Results.map((element, index) => (
-                  <p key={index}>
-                    <span style={{ fontWeight: "bold" }}>{element.split("#")[0]}</span>
-                    <br />
-                    Males: {element.split("#")[1]}
-                    <br />
-                    Females: {element.split("#")[2]}
-                  </p>
+                  <CityAnaliticBox key={index} cityName={element.split("#")[0]} maleNum={element.split("#")[1]} femaleNum={element.split("#")[2]}></CityAnaliticBox>
                 ))}
               </div>
               <p className="text-[14px] text-[grey] mt-[20px]" style={timer3 == "" ? {display :"none"} : {}}>Tempo di esecuzione: {timer3} secondi</p>
             </div>
 
             <div className="max-h-[100%] flex flex-col gap-[10px] overflow-hidden" style={selectedQuery != 3 ? {display: "none"} : {}}>
-              <p>Selezionare l'ultimo messaggio creato da ogni utente di un determinato genere (group by ID)</p>
+              <p>Selezionare l'ultimo messaggio creato da ogni utente di un determinato genere</p>
               <div className="flex gap-[15px] items-center">
                 <label>Genere: </label>
                 <select className="h-[30px] rounded-[6px] outline-none text-[18px]" value={genderInput} onChange={(event) => setGenderInput(event.target.value)}>
@@ -294,15 +292,11 @@ export default function mainPage() {
                 <button className="w-[150px] h-[50px] px-[20px] text-[16px] rounded-[6px] cursor-pointer" onClick={() => parametriche_query1()}>Esegui query</button>
               </div>
               <Image src="/loading_icon.gif" style={!isLoadingParamQuery1 ? {display: "none"} : {}} width={250} height={150} alt="loading_icon" priority/>
-              <div className="overflow-y-scroll">
+              <div className="overflow-y-scroll grid grid-cols-3 gap-[10px]">
                 {
                   query1ParamError == "" ?
                     parametrica1Results.map((record, index) => (
-                      <p key={index}>
-                        {record[0]}
-                        <br />
-                        {record[1]}
-                      </p>
+                      <MsgParamBox key={index} user={record[0]} msg={record[1]}></MsgParamBox>
                     )) : query1ParamError
                 }
               </div>
@@ -318,20 +312,11 @@ export default function mainPage() {
               </div>
               <p className="text-[grey]" style={{margin: 0}}>esempio: Elvis_Presley, Che_Guevara</p>
               <Image src="/loading_icon.gif" style={!isLoadingParamQuery2 ? {display: "none"} : {}} width={250} height={150} alt="loading_icon" priority/>
-              <div className="overflow-y-scroll">
+              <div className="overflow-y-scroll flex flex-col gap-[20px]">
                 {
                   query2ParamError == "" ? 
                     parametrica2Results.map((element, index) => (
-                      <p key={index} style={{ fontWeight: "bold" }}>
-                        {element.name}
-                        <br />
-                        {element.msgs.map((element, index) => (
-                          <span key={index} style={{ fontWeight: "normal" }}>
-                            - {element.id}: {element.content}
-                            <br />
-                          </span>
-                        ))}
-                      </p>
+                      <MsgListBox key={index} user={element.name} msgs={element.msgs}></MsgListBox>
                     )) : query2ParamError
                 }
               </div>
@@ -347,18 +332,11 @@ export default function mainPage() {
               </div>
               <p className="text-[grey]" style={{margin: 0}}>esempio: 2199023262994</p>
               <Image src="/loading_icon.gif" style={!isLoadingParamQuery3 ? {display: "none"} : {}} width={250} height={150} alt="loading_icon" priority/>
-              <div className="overflow-y-scroll">
+              <div className="overflow-y-scroll flex flex-col gap-[20px]">
                 {
                   query3ParamError == "" ?
                     parametrica3Results.map((record, index) => (
-                      <p key={index}>
-                        <span style={{ fontWeight: "bold" }}>{record[0]}</span><br/>
-                        {
-                          record[1].map((element, index) => {
-                            return <span key={index}> - {element}<br/></span>
-                          })
-                        }
-                      </p>
+                      <ForumsListBox key={index} user={record[0]} forums={record[1]}></ForumsListBox>
                     )) : query3ParamError
                 }
               </div>
