@@ -23,11 +23,11 @@ export async function GET(req: Request) {
     let usersList = users.map((record) => record.id);
 
     // Prende i commenti di quegli utenti
-    const comments_rel = await db
+    let commentIds = await db
       .collection("comment_hasCreator_person")
       .find({ Person_id: { $in: usersList } }, { projection: { Comment_id: 1, Person_id: 1 } })
       .toArray();
-    let commentIds = comments_rel.map((record) => record.Comment_id);
+    commentIds = commentIds.map((record) => record.Comment_id);
     if(commentIds.length == 0){
       return NextResponse.json({ error: "Nessun commento trovato" });
     }
@@ -37,7 +37,7 @@ export async function GET(req: Request) {
       .collection("comment")
       .find({ id: { $in: commentIds } })
       .toArray();
-    let recentComments = groupCommentsByPerson(users, comments_rel, comments);  // controllare
+    let recentComments = groupCommentsByPerson(users, commentIds, comments);
     //console.log(recentComments);
 
     return NextResponse.json(recentComments);
@@ -48,14 +48,12 @@ export async function GET(req: Request) {
   }
 }
 
-function groupCommentsByPerson(persons: any, commentLinks: any, comments: any): Record<string, any> {
-  // Map person ID to full name
+function groupCommentsByPerson(persons: any, commentIds: any, comments: any): Record<string, any> {
   const personMap: Record<string, string> = {};
   for (const p of persons) {
     personMap[String(p.id)] = `${p.firstName} ${p.lastName}`;
   }
 
-  // Map comment ID to comment object
   const commentMap: Record<string, any> = {};
   for (const c of comments) {
     commentMap[String(c.id)] = c;
@@ -63,7 +61,7 @@ function groupCommentsByPerson(persons: any, commentLinks: any, comments: any): 
 
   const mostRecent: Record<string, any> = {};
 
-  for (const link of commentLinks) {
+  for (const link of commentIds) {
     const personId = String(link.Person_id);
     const commentId = String(link.Comment_id);
 
@@ -76,7 +74,7 @@ function groupCommentsByPerson(persons: any, commentLinks: any, comments: any): 
         const personName = personMap[personId];
 
         if (!mostRecent[personName] || creationDate > new Date(mostRecent[personName]._creation_date)) {
-          comment._creation_date = creationDate.toISOString(); // store ISO string or keep Date object as you prefer
+          comment._creation_date = creationDate.toISOString();
           mostRecent[personName] = comment;
         }
       }
