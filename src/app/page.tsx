@@ -28,6 +28,12 @@ export default function mainPage() {
   const [isLoadingAnalitQuery1, setIsLoadingAnalitQuery1] = useState(false)
   const [timer1, setTimer1] = useState("");
 
+  // risultati query analitica 2
+  const [analitica2Results, setAnalitica2Results] = useState<string[]>([])
+  const [isLoadingAnalitQuery2, setIsLoadingAnalitQuery2] = useState(false)
+  const [showResultsQuery2, setShowResultsQuery2] = useState(false)
+  const [timer2, setTimer2] = useState("");
+
   // risultati query analitica 3
   const [analitica3Results, setAnalitica3Results] = useState([] as string[]);
   const [isLoadingAnalitQuery3, setIsLoadingAnalitQuery3] = useState(false)
@@ -79,11 +85,26 @@ export default function mainPage() {
 
   async function analitiche_query2() {
     try {
+      const start = performance.now();
+
+      setIsLoadingAnalitQuery2(true)
+      setShowResultsQuery2(false)
       const res = await axios.get("/api/analitiche_query2");
-      let result = [] as string[];
-      console.log(res);
+      let result = [] as string[]
+      res.data.forEach((record: any) => {
+        record[1].forEach((element: string) => {
+          result = [...result, element]
+        });
+      });
+      setAnalitica2Results(result);
+      setShowResultsQuery2(true)
+
+      const end = performance.now();
+      setTimer2(((end - start) / 1000).toFixed(2));
     } catch (error) {
       console.error(error);
+    } finally {
+      setIsLoadingAnalitQuery2(false)
     }
   }
 
@@ -230,14 +251,14 @@ export default function mainPage() {
   return (
     <>
       <main className="text-[18px]">
-        <h1 className="text-[42px] text-center" style={{ fontWeight: "bold" }}>
+        <h1 className="text-[42px] text-center text-[#235284]" style={{ fontWeight: "bold" }}>
           Progetto MAADB
         </h1>
         <div className="w-full h-[80vh] flex">
           <div className="w-[15%] h-[100vdh] flex flex-col gap-[5px] pr-[25px]" style={{borderRight: "1px solid black"}}>
             <p className="text-[20px]">Query analitiche:</p>
             <button className="w-full h-[50px] text-[16px] rounded-[6px] cursor-pointer" onClick={() => setSelectedQuery(0)}>Query 1</button>
-            <button className="w-full h-[50px] bg-[#FF7F7F] text-[16px] rounded-[6px] cursor-pointer" onClick={() => setSelectedQuery(1)}>Query 2</button>
+            <button className="w-full h-[50px] text-[16px] rounded-[6px] cursor-pointer" onClick={() => setSelectedQuery(1)}>Query 2</button>
             <button className="w-full h-[50px] text-[16px] rounded-[6px] cursor-pointer" onClick={() => setSelectedQuery(2)}>Query 3</button>
             <p className="text-[20px]">Query parametriche:</p>
             <button className="w-full h-[50px] text-[16px] rounded-[6px] cursor-pointer" onClick={() => setSelectedQuery(3)}>Query 1</button>
@@ -248,7 +269,7 @@ export default function mainPage() {
 
             <div className="flex flex-col gap-[10px]" style={selectedQuery != 0 ? {display: "none"} : {}}>
               <p>Percentuale di studenti europei sul totale degli studenti nel mondo</p>
-              <button className="w-[150px] h-[50px] px-[20px] text-[16px] rounded-[6px] cursor-pointer" onClick={() => analitiche_query1()}>Esegui query</button>
+              <button className="w-[150px] h-[50px] bg-[#012231] text-[white] px-[20px] text-[16px] rounded-[6px] cursor-pointer" onClick={() => analitiche_query1()}>Esegui query</button>
               <Image src="/loading_icon.gif" style={!isLoadingAnalitQuery1 ? {display: "none"} : {}} width={250} height={150} alt="loading_icon" priority/>
               <div style={!showResultsQuery1 ? {display : "none"} : {}}>
                 <p>
@@ -266,12 +287,21 @@ export default function mainPage() {
 
             <div className="flex flex-col gap-[10px]" style={selectedQuery != 1 ? {display: "none"} : {}}>
               <p>Seleziona i tag dei top 10 forum</p>
-              <button className="w-[150px] min-h-[50px] px-[20px] text-[16px] rounded-[6px] cursor-pointer" onClick={() => analitiche_query2()}>Query 2</button>
+              <button className="w-[150px] min-h-[50px] bg-[#012231] text-[white] px-[20px] text-[16px] rounded-[6px] cursor-pointer" onClick={() => analitiche_query2()}>Esegui query</button>
+              <Image src="/loading_icon.gif" style={!isLoadingAnalitQuery2 ? {display: "none"} : {}} width={250} height={150} alt="loading_icon" priority/>
+              <div className="overflow-y-scroll overflow-x-hidden" style={!showResultsQuery2 ? {display : "none"} : {}}>
+                {
+                  <div>
+                    <p><span style={{fontWeight: "bold"}}>Tag trovati:</span> {analitica2Results.join(", ")}</p> 
+                  </div>
+                }
+                <p className="text-[14px] text-[grey] mt-[20px]">Tempo di esecuzione: {timer2} secondi</p>
+              </div>
             </div>
 
             <div className="max-h-[100%] flex flex-col gap-[10px] overflow-hidden" style={selectedQuery != 2 ? {display: "none"} : {}}>
               <p>Contare il numero di studenti lavoratori per città e per sesso</p>
-              <button className="w-[150px] min-h-[50px] px-[20px] text-[16px] rounded-[6px] cursor-pointer" onClick={() => analitiche_query3()}>Esegui query</button>
+              <button className="w-[150px] min-h-[50px] bg-[#012231] text-[white] px-[20px] text-[16px] rounded-[6px] cursor-pointer" onClick={() => analitiche_query3()}>Esegui query</button>
               <Image src="/loading_icon.gif" style={!isLoadingAnalitQuery3 ? {display: "none"} : {}} width={250} height={150} alt="loading_icon" priority/>
               <div className="overflow-y-scroll overflow-x-hidden grid grid-cols-5 gap-[10px]">
                 {analitica3Results.map((element, index) => (
@@ -289,7 +319,7 @@ export default function mainPage() {
                   <option value={"male"}>Male</option>
                   <option value={"female"}>Female</option>
                 </select>
-                <button className="w-[150px] h-[50px] px-[20px] text-[16px] rounded-[6px] cursor-pointer" onClick={() => parametriche_query1()}>Esegui query</button>
+                <button className="w-[150px] h-[50px] bg-[#012231] text-[white] px-[20px] text-[16px] rounded-[6px] cursor-pointer" onClick={() => parametriche_query1()}>Esegui query</button>
               </div>
               <Image src="/loading_icon.gif" style={!isLoadingParamQuery1 ? {display: "none"} : {}} width={250} height={150} alt="loading_icon" priority/>
               <div className="overflow-y-scroll grid grid-cols-3 gap-[10px]">
@@ -308,7 +338,7 @@ export default function mainPage() {
               <div className="flex gap-[15px] items-center">
                 <label>Tag: </label>
                 <input type="text" className="h-[30px] rounded-[6px] outline-none text-[18px]" value={tagInput} onChange={(event) => setTagInput(event.target.value)}></input>
-                <button className="w-[150px] h-[50px] px-[20px] text-[16px] rounded-[6px] cursor-pointer" onClick={() => parametriche_query2()}>Esegui query</button>
+                <button className="w-[150px] h-[50px] bg-[#012231] text-[white] px-[20px] text-[16px] rounded-[6px] cursor-pointer" onClick={() => parametriche_query2()}>Esegui query</button>
               </div>
               <p className="text-[grey]" style={{margin: 0}}>esempio: Elvis_Presley, Che_Guevara</p>
               <Image src="/loading_icon.gif" style={!isLoadingParamQuery2 ? {display: "none"} : {}} width={250} height={150} alt="loading_icon" priority/>
@@ -328,7 +358,7 @@ export default function mainPage() {
               <div className="flex gap-[15px] items-center">
                 <label>Person ID: </label>
                 <input type="text" className="h-[30px] rounded-[6px] outline-none text-[18px]" value={userIDInput} onChange={(event) => setUserIDInput(event.target.value)}></input>
-                <button className="w-[150px] h-[50px] px-[20px] text-[16px] rounded-[6px] cursor-pointer" onClick={() => parametriche_query3()}>Esegui query</button>
+                <button className="w-[150px] h-[50px] bg-[#012231] text-[white] px-[20px] text-[16px] rounded-[6px] cursor-pointer" onClick={() => parametriche_query3()}>Esegui query</button>
               </div>
               <p className="text-[grey]" style={{margin: 0}}>esempio: 2199023262994</p>
               <Image src="/loading_icon.gif" style={!isLoadingParamQuery3 ? {display: "none"} : {}} width={250} height={150} alt="loading_icon" priority/>

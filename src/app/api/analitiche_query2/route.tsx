@@ -15,12 +15,12 @@ export async function GET() {
       .aggregate([{ $group: { _id: "$Forum_id", memberCount: { $sum: 1 } } }, { $sort: { memberCount: -1 } }, { $limit: 10 }])
       .toArray();
     top_forums = top_forums.map((record) => record._id);
-    console.log(top_forums);
+    //console.log(top_forums);
 
     // Seleziona i tag dei top 10 forum
     const result = await session.run("MATCH (f:forum)-[:forumhastag]->(t:tag) WHERE f.id IN $top_forums RETURN f.id AS forumId, collect(t.name) AS tags", { top_forums });
     let final_res = result.records.map((record) => [record.get("forumId"), record.get("tags")]);
-    console.log(final_res);
+    //console.log(final_res);
 
     return NextResponse.json(final_res);
   } catch (error) {
